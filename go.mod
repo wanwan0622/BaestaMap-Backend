@@ -1,4 +1,4 @@
-module baestamap
+module github.com/wanwan0622/BaestaMap-Backend
 
 go 1.18
 
