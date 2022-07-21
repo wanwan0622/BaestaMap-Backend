@@ -2,6 +2,7 @@ package function
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
 
@@ -11,7 +12,7 @@ import (
 	"google.golang.org/api/option"
 )
 
-func createClient(ctx context.Context) *firestore.Client {
+func LocalCreateClient(ctx context.Context) *firestore.Client {
 	// Sets your Google Cloud Platform project ID.
 	sa := option.WithCredentialsFile("serviceAccount.json")
 	conf := &firebase.Config{ProjectID: "baestamap"}
@@ -22,9 +23,22 @@ func createClient(ctx context.Context) *firestore.Client {
 
 	client, err := app.Firestore(ctx)
 	if err != nil {
-		log.Fatalln(err)
+		log.Fatalf("Failed to Create Client: %v", err)
 	}
 	// Close client when done with
+	return client
+}
+
+func remoteCreateClient(ctx context.Context) *firestore.Client {
+	projectID := "baestamap"
+	flag.StringVar(&projectID, "project", projectID, "The Google Cloud Platform project ID.")
+	flag.Parse()
+
+	// [START firestore_setup_client_create]
+	client, err := firestore.NewClient(ctx, projectID)
+	if err != nil {
+		log.Fatalf("Failed to create client: %v", err)
+	}
 	return client
 }
 
@@ -40,8 +54,9 @@ func fireStoreInsert(ctx context.Context, client *firestore.Client) {
 	}
 }
 
-func fireStoreRead(ctx context.Context, client *firestore.Client) {
+func fireStoreRead(ctx context.Context, client *firestore.Client) []*firestore.DocumentSnapshot {
 	iter := client.Collection("users").Documents(ctx)
+	var results []*firestore.DocumentSnapshot
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
@@ -50,6 +65,8 @@ func fireStoreRead(ctx context.Context, client *firestore.Client) {
 		if err != nil {
 			log.Fatalf("Failed to iterate: %v", err)
 		}
-		fmt.Println(doc.Data())
+		fmt.Println(doc.Data()) // TODO: remove
+		results = append(results, doc)
 	}
+	return results
 }
