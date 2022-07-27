@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"encoding/json"
 
 	"cloud.google.com/go/firestore"
 	firebase "firebase.google.com/go"
@@ -42,16 +43,31 @@ func remoteCreateClient(ctx context.Context) *firestore.Client {
 	return client
 }
 
-func fireStoreInsert(ctx context.Context, client *firestore.Client) {
-	// Get a Firestore client.
-	_, _, err := client.Collection("users").Add(ctx, map[string]interface{}{
-		"first": "Ada",
-		"last":  "Lovelace",
-		"born":  1815,
-	})
+type Location struct {
+	Lat string
+	Lng string
+}
+type PostDocs struct {
+	PostId string 
+	SearchWord string
+	Location Location
+}
+func FireStoreInsert(ctx context.Context, client *firestore.Client, postDocs PostDocs) bool {
+	jsonStr, err := json.Marshal(postDocs)
 	if err != nil {
-		log.Fatalf("Failed adding alovelace: %v", err)
+		log.Fatalln(err)
+		return false
 	}
+	var mapData map[string]interface{}
+	if err := json.Unmarshal(jsonStr, &mapData); err != nil {
+        fmt.Println(err)
+		return false
+    }
+	if _, _, err := client.Collection("posts").Add(ctx, mapData); err != nil {
+		log.Fatalf("Failed adding alovelace: %v", err)
+		return false
+	}
+	return true
 }
 
 func fireStoreRead(ctx context.Context, client *firestore.Client) []*firestore.DocumentSnapshot {

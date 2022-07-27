@@ -72,21 +72,21 @@ type Client struct {
 	ClientId string `json:"client_id"`
 }
 
-func Crawling() {
+func Crawling(location string) ([]string, error) {
 	var client Client
 	raw, err := ioutil.ReadFile("./client.json")
 	if err != nil {
 		log.Fatal(err)
-		return
+		return []string{}, err
 	}
 	json.Unmarshal(raw, &client)
-	location := "新橋ランチ"
+	
 	bytes, err := Scraping(location, client.ClientId)
 	if err != nil {
 		log.Fatal(err)
+		return []string{}, err
 	}
 	jsonObj := bytes2Json(bytes)
 	postIDs := getPostIDs(jsonObj)
-
-	fmt.Println(postIDs)
+	return postIDs, nil
 }
