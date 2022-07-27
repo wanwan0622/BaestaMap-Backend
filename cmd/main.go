@@ -9,6 +9,26 @@ import (
 )
 
 func main() {
+	postIds := [...] string{"CghEoYyv-4e", "CghbnAEPfU8"}
+	function.GetCoordinates(postIds[0])
+}
+
+// func WebServer() {
+// 	http.HandleFunc("/", localGcloudMain)
+// 	fmt.Println("Server started on: http://127.0.0.1:8080")
+// 	http.ListenAndServe("127.0.0.1:8080", nil)
+// }
+
+// func localGcloudMain(w http.ResponseWriter, r *http.Request) {
+// 	ctx := context.Background()
+// 	client := function.LocalCreateClient(ctx)
+// 	result := function.GcloudFirestore(ctx, client)
+// 	defer client.Close()
+// 	w.Header().Set("Content-Type", "application/json")
+// 	w.Write(result)
+// }
+
+func Crowling() {
 	location := "新橋ランチ"
 	postIDs, err := function.Crawling(location)
 	if err != nil {
@@ -30,16 +50,5 @@ func main() {
 	if !ok {
 		log.Fatal("FireStoreInsert failed")
 	}
-// 	http.HandleFunc("/", localGcloudMain)
-// 	fmt.Println("Server started on: http://127.0.0.1:8080")
-// 	http.ListenAndServe("127.0.0.1:8080", nil)
+	defer client.Close()
 }
-
-// func localGcloudMain(w http.ResponseWriter, r *http.Request) {
-// 	ctx := context.Background()
-// 	client := function.LocalCreateClient(ctx)
-// 	result := function.GcloudFirestore(ctx, client)
-// 	defer client.Close()
-// 	w.Header().Set("Content-Type", "application/json")
-// 	w.Write(result)
-// }
