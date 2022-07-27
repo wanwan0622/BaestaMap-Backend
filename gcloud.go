@@ -2,9 +2,9 @@ package function
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
-	"encoding/json"
 
 	"cloud.google.com/go/firestore"
 )
@@ -18,9 +18,9 @@ func GcloudFirestore(ctx context.Context, client *firestore.Client) []byte {
 	// fireStoreInsert(ctx, client)
 	result := fireStoreRead(ctx, client)
 	jsonRes, err := json.Marshal(result)
-    if err != nil {
-        fmt.Println("JSON marshal error: ", err)
-    }
+	if err != nil {
+		fmt.Println("JSON marshal error: ", err)
+	}
 	return jsonRes
 }
 
