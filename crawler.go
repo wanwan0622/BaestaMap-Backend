@@ -47,14 +47,23 @@ func bytes2Json(bytes []byte) interface{} {
 }
 
 func getPostIDs(jsonObj interface{}) []string {
-	edges := jsonObj.(map[string]interface{})["data"].(map[string]interface{})["hashtag"].(map[string]interface{})["edge_hashtag_to_media"].(map[string]interface{})["edges"]
+	edges, err := jsonObj.(map[string]interface{})["data"].(map[string]interface{})["hashtag"].(map[string]interface{})["edge_hashtag_to_media"].(map[string]interface{})["edges"]
+	if !err {
+		log.Fatal(err)
+		return []string{}
+	}
+
 	edgeNum := len(edges.([]interface{}))
-	getShortCode := func(idx int) string {
-		return edges.([]interface{})[idx].(map[string]interface{})["node"].(map[string]interface{})["shortcode"].(string)
+	getShortCode := func(idx int) (string, bool) {
+		shortCode, err := edges.([]interface{})[idx].(map[string]interface{})["node"].(map[string]interface{})["shortcode"].(string)
+		return shortCode, err
 	}
 	shortCodes := make([]string, edgeNum)
 	for i := 0; i < edgeNum; i++ {
-		shortCodes[i] = getShortCode(i)
+		shortCode, err := getShortCode(i)
+		if err {
+			shortCodes[i] = shortCode
+		}
 	}
 	return shortCodes
 }
