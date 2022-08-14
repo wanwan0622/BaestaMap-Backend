@@ -30,9 +30,8 @@ func localGcloudMain(w http.ResponseWriter, r *http.Request) {
 	
 	w.Header().Set("Content-Type", "application/json")
 	if err != nil {
-		w.Write([]byte("{'success':'false', posts:[]}"))
+		w.Write([]byte("{'success':false,error:'unexpected error!'}"))
 	} else {
-		// TODO: formatting
 		w.Write(result)
 	}
 }

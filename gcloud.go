@@ -13,19 +13,28 @@ func HelloCommand(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("{'text':'Hello World!'}"))
 }
 
+type APIResponse struct {
+	Success bool   `json:"success"`
+	Posts   []PostDocs `json:"posts"`
+}
+
 func GcloudFirestore(ctx context.Context, client *firestore.Client, location SearchLocation) ([]byte, error) {
 	result, err := FetchNearPosts(ctx, client, location, 0.1)
 	if err != nil {
 		log.Fatalf("Failed to get posts: %v", err)
 		return nil, err
 	}
-	// TODO: formatting
-	posts, err := json.Marshal(result)
+	posts := DSnaps2Obj(result)
+	apiResponse := APIResponse{
+		Success: true,
+		Posts: posts,
+	}
+	json, err := json.Marshal(apiResponse)
 	if err != nil {
 		log.Fatalf("Failed to parse json: %v", err)
 		return nil, err
 	}
-	return posts, nil
+	return json, nil
 }
 
 func GcloudMain(w http.ResponseWriter, r *http.Request) {
@@ -41,9 +50,8 @@ func GcloudMain(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	if err != nil {
-		w.Write([]byte("{'success':'false', posts:[]}"))
+		w.Write([]byte("{'success':false,error:'unexpected error!'}"))
 	} else {
-		// TODO: formatting
 		w.Write(result)
 	}
 }

@@ -47,17 +47,17 @@ type SearchLocation struct {
 }
 
 type Location struct {
-	Lat        float64
-	Lng        float64
-	LocationId int32
-	Name       string
+	Lat        float64 `json:"lat"`
+	Lng        float64 `json:"lng"`
+	LocationId int64  `json:"locationId"`
+	Name       string `json:"name"`
 }
 
 type PostDocs struct {
-	HashTagDocsId string
-	Location      Location
-	Permalink     string
-	Timestamp     time.Time
+	HashTagDocsId string `json:"hashTagDocsId"`
+	Location      Location `json:"location"`
+	Permalink     string `json:"permalink"`
+	Timestamp     time.Time `json:"timestamp"`
 }
 
 func FetchNearPosts(ctx context.Context, client *firestore.Client, location SearchLocation, diff float64) ([]*firestore.DocumentSnapshot, error) {
@@ -77,4 +77,22 @@ func FetchNearPosts(ctx context.Context, client *firestore.Client, location Sear
 		}
 	}
 	return nearPosts, nil
+}
+
+func DSnaps2Obj(dSnaps []*firestore.DocumentSnapshot) []PostDocs {
+	obj := []PostDocs{}
+	for _, dSnap := range dSnaps {
+		obj = append(obj, PostDocs{
+			HashTagDocsId: dSnap.Data()["hashTagDocsId"].(string),
+			Location: Location{
+				Lat:        dSnap.Data()["location"].(map[string]interface{})["lat"].(float64),
+				Lng:        dSnap.Data()["location"].(map[string]interface{})["lng"].(float64),
+				LocationId: int64(dSnap.Data()["location"].(map[string]interface{})["locationId"].(int64)),
+				Name:       dSnap.Data()["location"].(map[string]interface{})["name"].(string),
+			},
+			Permalink: dSnap.Data()["permalink"].(string),
+			Timestamp: dSnap.Data()["timestamp"].(time.Time),
+		})
+	}
+	return obj
 }
