@@ -1,14 +1,14 @@
 package function
 
 import (
+	"cloud.google.com/go/firestore"
 	"context"
+	firebase "firebase.google.com/go"
 	"flag"
 	"fmt"
 	"log"
-	"encoding/json"
-
-	"cloud.google.com/go/firestore"
-	firebase "firebase.google.com/go"
+	"time"
+	// "golang.org/x/text/number"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 )
@@ -43,46 +43,44 @@ func remoteCreateClient(ctx context.Context) *firestore.Client {
 	return client
 }
 
-type Location struct {
-	Lat string
-	Lng string
-}
-type PostDocs struct {
-	PostId string 
-	SearchWord string
-	Location Location
-}
-func FireStoreInsert(ctx context.Context, client *firestore.Client, postDocs PostDocs) bool {
-	jsonStr, err := json.Marshal(postDocs)
-	if err != nil {
-		log.Fatalln(err)
-		return false
-	}
-	var mapData map[string]interface{}
-	if err := json.Unmarshal(jsonStr, &mapData); err != nil {
-        fmt.Println(err)
-		return false
-    }
-	if _, _, err := client.Collection("posts").Add(ctx, mapData); err != nil {
-		log.Fatalf("Failed adding alovelace: %v", err)
-		return false
-	}
-	return true
+type SearchLocation struct {
+	Lat float64
+	Lng float64
 }
 
-func fireStoreRead(ctx context.Context, client *firestore.Client) []*firestore.DocumentSnapshot {
-	iter := client.Collection("users").Documents(ctx)
-	var results []*firestore.DocumentSnapshot
+type Location struct {
+	Lat        float64
+	Lng        float64
+	LocationId int32
+	Name       string
+}
+
+type PostDocs struct {
+	HashTagDocsId string
+	Location      Location
+	Permalink     string
+	Timestamp     time.Time
+}
+
+func FetchNearPosts(ctx context.Context, client *firestore.Client, location SearchLocation, diff float64) []*firestore.DocumentSnapshot {
+	iter := client.Collection("posts").Where("location.lat", ">=", location.Lat-diff).Where("location.lat", "<=", location.Lat+diff).Limit(100).Documents(ctx)
+	nearPosts := []*firestore.DocumentSnapshot{}
 	for {
 		doc, err := iter.Next()
 		if err == iterator.Done {
 			break
 		}
 		if err != nil {
-			log.Fatalf("Failed to iterate: %v", err)
+			log.Fatalf("Failed to get posts: %v", err)
+			return nil
 		}
-		fmt.Println(doc.Data()) // TODO: remove
-		results = append(results, doc)
+		lng := doc.Data()["location"].(map[string]interface{})["lng"].(float64)
+		if location.Lng-diff <= lng && lng <= location.Lng+diff {
+			nearPosts = append(nearPosts, doc)
+		}
 	}
-	return results
+	for _, doc := range nearPosts {
+		fmt.Println(doc.Data())
+	}
+	return nearPosts
 }
