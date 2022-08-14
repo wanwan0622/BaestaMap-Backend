@@ -5,12 +5,10 @@ import (
 	"context"
 	firebase "firebase.google.com/go"
 	"flag"
-	"fmt"
-	"log"
-	"time"
-	// "golang.org/x/text/number"
 	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
+	"log"
+	"time"
 )
 
 func LocalCreateClient(ctx context.Context) *firestore.Client {
@@ -62,7 +60,7 @@ type PostDocs struct {
 	Timestamp     time.Time
 }
 
-func FetchNearPosts(ctx context.Context, client *firestore.Client, location SearchLocation, diff float64) []*firestore.DocumentSnapshot {
+func FetchNearPosts(ctx context.Context, client *firestore.Client, location SearchLocation, diff float64) ([]*firestore.DocumentSnapshot, error) {
 	iter := client.Collection("posts").Where("location.lat", ">=", location.Lat-diff).Where("location.lat", "<=", location.Lat+diff).Limit(100).Documents(ctx)
 	nearPosts := []*firestore.DocumentSnapshot{}
 	for {
@@ -71,16 +69,12 @@ func FetchNearPosts(ctx context.Context, client *firestore.Client, location Sear
 			break
 		}
 		if err != nil {
-			log.Fatalf("Failed to get posts: %v", err)
-			return nil
+			return nil, err
 		}
 		lng := doc.Data()["location"].(map[string]interface{})["lng"].(float64)
 		if location.Lng-diff <= lng && lng <= location.Lng+diff {
 			nearPosts = append(nearPosts, doc)
 		}
 	}
-	for _, doc := range nearPosts {
-		fmt.Println(doc.Data())
-	}
-	return nearPosts
+	return nearPosts, nil
 }

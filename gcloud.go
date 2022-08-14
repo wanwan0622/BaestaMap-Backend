@@ -1,12 +1,11 @@
 package function
 
 import (
+	"cloud.google.com/go/firestore"
 	"context"
 	"encoding/json"
-	"fmt"
+	"log"
 	"net/http"
-
-	"cloud.google.com/go/firestore"
 )
 
 func HelloCommand(w http.ResponseWriter, r *http.Request) {
@@ -14,21 +13,37 @@ func HelloCommand(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("{'text':'Hello World!'}"))
 }
 
-func GcloudFirestore(ctx context.Context, client *firestore.Client) []byte {
-	// fireStoreInsert(ctx, client)
-	result := fireStoreRead(ctx, client)
-	jsonRes, err := json.Marshal(result)
+func GcloudFirestore(ctx context.Context, client *firestore.Client, location SearchLocation) ([]byte, error) {
+	result, err := FetchNearPosts(ctx, client, location, 0.1)
 	if err != nil {
-		fmt.Println("JSON marshal error: ", err)
+		log.Fatalf("Failed to get posts: %v", err)
+		return nil, err
 	}
-	return jsonRes
+	// TODO: formatting
+	posts, err := json.Marshal(result)
+	if err != nil {
+		log.Fatalf("Failed to parse json: %v", err)
+		return nil, err
+	}
+	return posts, nil
 }
 
 func GcloudMain(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 	client := remoteCreateClient(ctx)
-	result := GcloudFirestore(ctx, client)
+	// TODO: get location from request
+	location := SearchLocation{
+		Lat: 35.615304235976,
+		Lng: 139.7175761816,
+	}
+	result, err := GcloudFirestore(ctx, client, location)
 	defer client.Close()
+
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(result)
+	if err != nil {
+		w.Write([]byte("{'success':'false', posts:[]}"))
+	} else {
+		// TODO: formatting
+		w.Write(result)
+	}
 }
