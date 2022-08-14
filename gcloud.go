@@ -1,11 +1,12 @@
 package function
 
 import (
-	"cloud.google.com/go/firestore"
 	"context"
 	"encoding/json"
 	"log"
 	"net/http"
+	"io/ioutil"
+	"cloud.google.com/go/firestore"
 )
 
 func HelloCommand(w http.ResponseWriter, r *http.Request) {
@@ -14,7 +15,7 @@ func HelloCommand(w http.ResponseWriter, r *http.Request) {
 }
 
 type APIResponse struct {
-	Success bool   `json:"success"`
+	Success bool       `json:"success"`
 	Posts   []PostDocs `json:"posts"`
 }
 
@@ -27,7 +28,7 @@ func GcloudFirestore(ctx context.Context, client *firestore.Client, location Sea
 	posts := DSnaps2Obj(result)
 	apiResponse := APIResponse{
 		Success: true,
-		Posts: posts,
+		Posts:   posts,
 	}
 	json, err := json.Marshal(apiResponse)
 	if err != nil {
@@ -38,13 +39,25 @@ func GcloudFirestore(ctx context.Context, client *firestore.Client, location Sea
 }
 
 func GcloudMain(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		w.Write([]byte("{'success':false,error:'Invalid request method.'}"))
+		return
+	}
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Fatalf("Failed to parse form: %v", err)
+		w.Write([]byte("{'success':false,error:'Failed to parse request body.'}"))
+		return
+	}
+	location := SearchLocation{}
+	err = json.Unmarshal(body, &location)
+	if err!= nil {
+		log.Fatalf("Failed to parse json: %v", err)
+		w.Write([]byte("{'success':false,error:'Failed to parse json.'}"))
+		return
+	}
 	ctx := context.Background()
 	client := remoteCreateClient(ctx)
-	// TODO: get location from request
-	location := SearchLocation{
-		Lat: 35.615304235976,
-		Lng: 139.7175761816,
-	}
 	result, err := GcloudFirestore(ctx, client, location)
 	defer client.Close()
 

@@ -49,14 +49,14 @@ type SearchLocation struct {
 type Location struct {
 	Lat        float64 `json:"lat"`
 	Lng        float64 `json:"lng"`
-	LocationId int64  `json:"locationId"`
-	Name       string `json:"name"`
+	LocationId int64   `json:"locationId"`
+	Name       string  `json:"name"`
 }
 
 type PostDocs struct {
-	HashTagDocsId string `json:"hashTagDocsId"`
-	Location      Location `json:"location"`
-	Permalink     string `json:"permalink"`
+	HashTagDocsId string    `json:"hashTagDocsId"`
+	Location      Location  `json:"location"`
+	Permalink     string    `json:"permalink"`
 	Timestamp     time.Time `json:"timestamp"`
 }
 
