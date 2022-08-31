@@ -1,21 +1,21 @@
 package function
 
 import (
-	"cloud.google.com/go/firestore"
 	"context"
-	firebase "firebase.google.com/go"
 	"flag"
-	"google.golang.org/api/iterator"
-	"google.golang.org/api/option"
 	"log"
 	"time"
+
+	"cloud.google.com/go/firestore"
+	firebase "firebase.google.com/go"
+	"google.golang.org/api/iterator"
+	"google.golang.org/api/option"
 )
 
 func LocalCreateClient(ctx context.Context) *firestore.Client {
 	// Sets your Google Cloud Platform project ID.
 	sa := option.WithCredentialsFile("serviceAccount.json")
-	conf := &firebase.Config{ProjectID: "baestamap"}
-	app, err := firebase.NewApp(ctx, conf, sa)
+	app, err := firebase.NewApp(ctx, nil, sa)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -29,7 +29,7 @@ func LocalCreateClient(ctx context.Context) *firestore.Client {
 }
 
 func remoteCreateClient(ctx context.Context) *firestore.Client {
-	projectID := "baestamap"
+	projectID := "baestamap-api-id"
 	flag.StringVar(&projectID, "project", projectID, "The Google Cloud Platform project ID.")
 	flag.Parse()
 

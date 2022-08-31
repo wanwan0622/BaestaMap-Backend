@@ -3,9 +3,10 @@ package function
 import (
 	"context"
 	"encoding/json"
+	"io/ioutil"
 	"log"
 	"net/http"
-	"io/ioutil"
+
 	"cloud.google.com/go/firestore"
 )
 
