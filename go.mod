@@ -8,6 +8,8 @@ require (
 	google.golang.org/api v0.88.0
 )
 
+require golang.org/x/time v0.0.0-20200416051211-89c76fbcd5d1 // indirect
+
 require (
 	cloud.google.com/go v0.103.0 // indirect
 	cloud.google.com/go/compute v1.7.0 // indirect
@@ -29,4 +31,5 @@ require (
 	google.golang.org/genproto v0.0.0-20220720214146-176da50484ac // indirect
 	google.golang.org/grpc v1.48.0 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
+	googlemaps.github.io/maps v1.3.2
 )
