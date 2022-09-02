@@ -2,7 +2,6 @@ package function
 
 import (
 	"context"
-	"flag"
 	"log"
 	"time"
 
@@ -30,10 +29,6 @@ func LocalCreateClient(ctx context.Context) *firestore.Client {
 
 func remoteCreateClient(ctx context.Context) *firestore.Client {
 	projectID := "baestamap-api-id"
-	flag.StringVar(&projectID, "project", projectID, "The Google Cloud Platform project ID.")
-	flag.Parse()
-
-	// [START firestore_setup_client_create]
 	client, err := firestore.NewClient(ctx, projectID)
 	if err != nil {
 		log.Fatalf("Failed to create client: %v", err)
