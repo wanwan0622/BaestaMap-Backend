@@ -81,7 +81,7 @@ func GetPostFromQuery(w http.ResponseWriter, r *http.Request) {
 	location, err := Query2Coordinate(query.Query)
 	if err != nil {
 		log.Fatalf("Failed to Convert Query to Coordinate: %v", err)
-		w.Write([]byte(fmt.Sprintf("{'success':false,error:'%s'}", err)))
+		w.Write([]byte(fmt.Sprintf("{'success':false,error:'%s'}", err.Error())))
 		return
 	}
 
