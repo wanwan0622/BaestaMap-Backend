@@ -3,6 +3,8 @@ package function
 import (
 	"context"
 	"log"
+	"math"
+	"sort"
 	"time"
 
 	"cloud.google.com/go/firestore"
@@ -55,8 +57,13 @@ type PostDocs struct {
 	Timestamp     time.Time `json:"timestamp"`
 }
 
-func FetchNearPosts(ctx context.Context, client *firestore.Client, location SearchLocation, diff float64) ([]*firestore.DocumentSnapshot, error) {
-	iter := client.Collection("posts").Where("location.lat", ">=", location.Lat-diff).Where("location.lat", "<=", location.Lat+diff).Limit(100).Documents(ctx)
+func FetchNearPosts(ctx context.Context, client *firestore.Client, location SearchLocation) ([]*firestore.DocumentSnapshot, error) {
+	// 徒歩30分圏内の円に外接する正方形に含まれる投稿を取得
+	// 1km あたりの緯度は、だいたい X=0.0090133729745762
+	// 徒歩5kmで行ける距離は「不動産の表示に関する公正競争規約施行規則」より400m
+	// 徒歩30分圏内の円に外接する正方形の一辺/2の緯度 = X * 2.4(km)
+	diff := 0.00901337 * 2.4
+	iter := client.Collection("posts").Where("location.lat", ">=", location.Lat-diff).Where("location.lat", "<=", location.Lat+diff).Limit(200).Documents(ctx)
 	nearPosts := []*firestore.DocumentSnapshot{}
 	for {
 		doc, err := iter.Next()
@@ -71,7 +78,18 @@ func FetchNearPosts(ctx context.Context, client *firestore.Client, location Sear
 			nearPosts = append(nearPosts, doc)
 		}
 	}
-	return nearPosts, nil
+	// Locationから近い順に並び替え
+	sort.Slice(nearPosts, func(x, y int) bool {
+		latX := nearPosts[x].Data()["location"].(map[string]interface{})["lat"].(float64)
+		lngX := nearPosts[x].Data()["location"].(map[string]interface{})["lng"].(float64)
+		distX := (latX-location.Lat)*(latX-location.Lat)+(lngX-location.Lng)*(lngX-location.Lng)
+		
+		latY := nearPosts[y].Data()["location"].(map[string]interface{})["lat"].(float64)
+		lngY := nearPosts[y].Data()["location"].(map[string]interface{})["lng"].(float64)
+		distY := (latY-location.Lat)*(latY-location.Lat)+(lngY-location.Lng)*(lngY-location.Lng)
+		return distX < distY
+	})
+	return nearPosts[:int(math.Min(100, float64(len(nearPosts))))], nil
 }
 
 func DSnaps2Obj(dSnaps []*firestore.DocumentSnapshot) []PostDocs {

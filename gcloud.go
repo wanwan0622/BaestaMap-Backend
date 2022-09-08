@@ -21,7 +21,7 @@ type APIResponse struct {
 }
 
 func GcloudFirestore(ctx context.Context, client *firestore.Client, location SearchLocation) ([]byte, error) {
-	result, err := FetchNearPosts(ctx, client, location, 0.1)
+	result, err := FetchNearPosts(ctx, client, location)
 	if err != nil {
 		log.Fatalf("Failed to get posts: %v", err)
 		return nil, err
@@ -65,7 +65,7 @@ func GcloudMain(w http.ResponseWriter, r *http.Request) {
 	}
 	location := SearchLocation{}
 	err = json.Unmarshal(body, &location)
-	if err!= nil {
+	if err != nil {
 		log.Fatalf("Failed to parse json: %v", err)
 		w.Write([]byte("{'success':false,error:'Failed to parse json.'}"))
 		return

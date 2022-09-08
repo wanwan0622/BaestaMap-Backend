@@ -100,7 +100,7 @@ func GetPostFromQuery(w http.ResponseWriter, r *http.Request) {
 }
 
 type LocationAPIResponse struct {
-	Success bool       `json:"success"`
+	Success  bool           `json:"success"`
 	Location SearchLocation `json:"location"`
 }
 
@@ -144,7 +144,7 @@ func GetLocationFromQuery(w http.ResponseWriter, r *http.Request) {
 	}
 
 	apiResponse := LocationAPIResponse{
-		Success: true,
+		Success:  true,
 		Location: location,
 	}
 	result, err := json.Marshal(apiResponse)
