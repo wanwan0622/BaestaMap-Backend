@@ -51,7 +51,6 @@ type Location struct {
 }
 
 type PostDocs struct {
-	HashTagDocsId string    `json:"hashTagDocsId"`
 	Location      Location  `json:"location"`
 	Permalink     string    `json:"permalink"`
 	Timestamp     time.Time `json:"timestamp"`
@@ -96,7 +95,6 @@ func DSnaps2Obj(dSnaps []*firestore.DocumentSnapshot) []PostDocs {
 	obj := []PostDocs{}
 	for _, dSnap := range dSnaps {
 		obj = append(obj, PostDocs{
-			HashTagDocsId: dSnap.Data()["hashTagDocsId"].(string),
 			Location: Location{
 				Lat:        dSnap.Data()["location"].(map[string]interface{})["lat"].(float64),
 				Lng:        dSnap.Data()["location"].(map[string]interface{})["lng"].(float64),
