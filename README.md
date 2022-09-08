@@ -34,3 +34,10 @@ curl -X POST -H "Content-Type: application/json" -d '{"lat":35.615304235976,"lng
 gcloud functions deploy baestamap-query --gen2 --runtime=go116 --region=us-central1 --source=. --entry-point=GetPostFromQuery --trigger-http --allow-unauthenticated
 curl -X POST -H "Content-Type: application/json" -d '{"query":"東京タワー"}' https://baestamap-query-qpz6p6e7bq-uc.a.run.app
 ```
+
+* Get Location from Query API
+
+```sh
+gcloud functions deploy baestamap-location --gen2 --runtime=go116 --region=us-central1 --source=. --entry-point=GetLocationFromQuery --trigger-http --allow-unauthenticated
+curl -X POST -H "Content-Type: application/json" -d '{"query":"東京タワー"}' https://baestamap-location-qpz6p6e7bq-uc.a.run.app
+```

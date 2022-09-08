@@ -98,3 +98,66 @@ func GetPostFromQuery(w http.ResponseWriter, r *http.Request) {
 		w.Write(result)
 	}
 }
+
+type LocationAPIResponse struct {
+	Success bool       `json:"success"`
+	Location SearchLocation `json:"location"`
+}
+
+func GetLocationFromQuery(w http.ResponseWriter, r *http.Request) {
+	// Set CORS headers for the preflight request
+	if r.Method == http.MethodOptions {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "POST")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		w.Header().Set("Access-Control-Max-Age", "3600")
+		w.WriteHeader(http.StatusNoContent)
+		return
+	}
+
+	// main request
+	// validation
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	if r.Method != http.MethodPost {
+		w.Write([]byte("{'success':false,error:'Invalid request method.'}"))
+		return
+	}
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Fatalf("Failed to parse form: %v", err)
+		w.Write([]byte("{'success':false,error:'Failed to parse request body.'}"))
+		return
+	}
+	query := SearchQuery{}
+	err = json.Unmarshal(body, &query)
+	if err != nil {
+		log.Fatalf("Failed to parse json: %v", err)
+		w.Write([]byte("{'success':false,error:'Failed to parse json.'}"))
+		return
+	}
+
+	location, err := Query2Coordinate(query.Query)
+	if err != nil {
+		log.Fatalf("Failed to Convert Query to Coordinate: %v", err)
+		w.Write([]byte(fmt.Sprintf("{'success':false,error:'%s'}", err.Error())))
+		return
+	}
+
+	apiResponse := LocationAPIResponse{
+		Success: true,
+		Location: location,
+	}
+	result, err := json.Marshal(apiResponse)
+	if err != nil {
+		log.Fatalf("Failed to parse json: %v", err)
+		w.Write([]byte(fmt.Sprintf("{'success':false,error:'%s'}", err.Error())))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err != nil {
+		w.Write([]byte("{'success':false,error:'unexpected error!'}"))
+	} else {
+		w.Write(result)
+	}
+}
