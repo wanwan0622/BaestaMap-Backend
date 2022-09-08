@@ -37,8 +37,8 @@ func remoteCreateClient(ctx context.Context) *firestore.Client {
 }
 
 type SearchLocation struct {
-	Lat float64
-	Lng float64
+	Lat float64 `json:"lat"`
+	Lng float64 `json:"lng"`
 }
 
 type Location struct {
